@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import './App.css';
 
 const WIDTH = 800;
-const HEIGHT = 800;
+const HEIGHT = 1500;
 const SPACE = 300;
 const RECT_WIDTH = 100;
 const RECT_HEIGHT = 40;
+
+
 
 export default class App extends Component {
 
@@ -22,6 +24,16 @@ export default class App extends Component {
       X: (WIDTH - RECT_WIDTH + SPACE) / 2,
       Y: 20
     }
+
+    this.lastY = this.sender.Y + RECT_HEIGHT;
+
+    //INPUTS
+    this.ber = 1000; //Bit Error Rate
+    this.length = 450; //Package Length
+    this.packageCount = 10; //Number of Packages
+    this.rtt = 15; //Run Trip Time (ms)
+    this.timeout = 4 * this.rtt; //Timeout
+
   }
 
   componentDidMount = () => {
@@ -31,7 +43,14 @@ export default class App extends Component {
     this.drawReceiver();
     this.drawSendPacket();
     this.drawAcknowledge();
+
+
     this.ctx.stroke();
+  }
+
+  getY = () => {
+    this.lastY += 30;
+    return this.lastY;
   }
 
   drawSender = () => {
@@ -58,14 +77,35 @@ export default class App extends Component {
 
   drawSendPacket = () => {
     //Draw Line
-    this.ctx.moveTo(this.sender.X + RECT_WIDTH / 2, this.sender.Y + RECT_HEIGHT + 20);
-    this.ctx.lineTo(this.receiver.X + RECT_WIDTH / 2, this.receiver.Y + RECT_HEIGHT + 50);
+    let fromY = this.getY();
+    let toY = this.getY();
+    this.ctx.moveTo(this.sender.X + RECT_WIDTH / 2, fromY);
+    this.ctx.lineTo(this.receiver.X + RECT_WIDTH / 2, toY);
+    //Draw Package
+    let p = {
+      X: (this.sender.X + this.receiver.X) / 2,
+      Y: (fromY + toY) / 2 - 14
+    };
+    this.ctx.rect(p.X - 10, p.Y - 15, 40, 20);
+    this.ctx.font = "15px Arial";
+    this.ctx.fillText("P1", p.X, p.Y);
   }
 
   drawAcknowledge = () => {
     //Draw Line
-    this.ctx.moveTo(this.receiver.X + RECT_WIDTH / 2, this.receiver.Y + RECT_HEIGHT + 55);
-    this.ctx.lineTo(this.sender.X + RECT_WIDTH / 2, this.sender.Y + RECT_HEIGHT + 80);
+    let fromY = this.getY();
+    let toY = this.getY();
+    this.ctx.moveTo(this.receiver.X + RECT_WIDTH / 2, fromY);
+    this.ctx.lineTo(this.sender.X + RECT_WIDTH / 2, toY);
+
+    //Draw Package
+    let p = {
+      X: (this.sender.X + this.receiver.X) / 1.7,
+      Y: (fromY + toY) / 2 - 14
+    };
+    this.ctx.rect(p.X - 3, p.Y - 15, 60, 20);
+    this.ctx.font = "15px Arial";
+    this.ctx.fillText("ACK1", p.X, p.Y);
   }
 
   render = () => {
