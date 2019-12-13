@@ -1,7 +1,8 @@
 import consts from './Constants.js';
+import App from './App';
 
 export default class Receiver {
-    constructor() {
+    constructor(rtt) {
         this.coords = {
             X: (consts.WIDTH - consts.RECT_WIDTH + consts.SPACE) / 2,
             Y: 20,
@@ -9,23 +10,27 @@ export default class Receiver {
         }
 
         this.acknowledges = []; //Acknowledges Sent
+        this.rtt = rtt;
+
     }
 
     setSender = (s) => {
         this.sender = s;
     }
-    getPackage = () => {
-
+    getPackage = (p) => {
+        setTimeout(() => {
+            this.sendAcknowledge(p.id)
+        }, this.rtt * 100);
     }
 
-    sendAcknowledge = (id, fromY, toY) => {
+    sendAcknowledge = (id) => {
         this.acknowledges.push(
             {
                 id: id,
                 fromX: this.coords.lineX,
-                fromY: fromY,
+                fromY: App.getY(),
                 toX: this.sender.coords.lineX,
-                toY: toY
+                toY: App.getY()
             }
         );
     }

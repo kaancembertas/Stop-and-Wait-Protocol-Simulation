@@ -1,14 +1,17 @@
 import consts from './Constants';
+import App from './App';
 
 export default class Sender {
 
-    constructor() {
+    constructor(rtt) {
         this.coords = {
             X: (consts.WIDTH - consts.RECT_WIDTH - consts.SPACE) / 2,
             Y: 20,
             lineX: ((consts.WIDTH - consts.RECT_WIDTH - consts.SPACE) / 2) + consts.RECT_WIDTH / 2
         }
         this.packages = []; //Packages Sent
+        this.lastPackageSent = null;
+        this.rtt = rtt;
 
 
     }
@@ -17,20 +20,16 @@ export default class Sender {
         this.receiver = r;
     }
 
-    getAcknowledge = () => {
-
-    }
-
-    sendPackage = (id, fromY, toY) => {
-        this.packages.push(
-            {
-                id: id,
-                fromX: this.coords.lineX,
-                fromY: fromY,
-                toX: this.receiver.coords.lineX,
-                toY: toY
-            }
-        );
+    sendPackage = (id) => {
+        this.lastPackageSent = {
+            id: id,
+            fromX: this.coords.lineX,
+            fromY: App.getY(),
+            toX: this.receiver.coords.lineX,
+            toY: App.getY()
+        };
+        this.packages.push(this.lastPackageSent);
+        this.receiver.getPackage(this.lastPackageSent);
 
     }
 
