@@ -15,20 +15,64 @@ class Sender {
       Y: 20,
       lineX: ((WIDTH - RECT_WIDTH - SPACE) / 2) + RECT_WIDTH / 2
     }
+    this.packages = []; //Packages Sent
 
 
   }
 
   setReceiver = (r) => {
-    this.Receiver = r;
+    this.receiver = r;
   }
 
   getAcknowledge = () => {
 
   }
 
-  sendPackage = () => {
+  sendPackage = (id, fromY, toY) => {
+    this.packages.push(
+      {
+        id: id,
+        fromX: this.coords.lineX,
+        fromY: fromY,
+        toX: this.receiver.coords.lineX,
+        toY: toY
+      }
+    );
 
+  }
+
+  drawSender = (ctx) => {
+    //Draw Box
+    ctx.rect(this.coords.X, this.coords.Y, RECT_WIDTH, RECT_HEIGHT);
+    //Draw Text
+    ctx.font = "20px Arial";
+    ctx.fillText("Sender", this.coords.X + 15, this.coords.Y + (RECT_HEIGHT / 2) + 8);
+    //Draw Line
+    ctx.moveTo(this.coords.X + RECT_WIDTH / 2, this.coords.Y + RECT_HEIGHT);
+    ctx.lineTo(this.coords.X + RECT_WIDTH / 2, HEIGHT - this.coords.Y + RECT_HEIGHT);
+  }
+
+  drawSentPackages = (ctx) => {
+
+    this.packages.forEach((p) => {
+      //Draw Line
+      ctx.moveTo(p.fromX, p.fromY);
+      ctx.lineTo(p.toX, p.toY);
+      //Draw Package
+      let box = {
+        X: (this.coords.X + this.receiver.coords.X) / 2,
+        Y: (p.fromY + p.toY) / 2 - 14
+      };
+      ctx.rect(box.X - 5, box.Y - 15, 40, 20);
+      ctx.font = "15px Arial";
+      ctx.fillText("P" + p.id, box.X, box.Y);
+
+    });
+  }
+
+  draw = (ctx) => {
+    this.drawSender(ctx);
+    this.drawSentPackages(ctx);
   }
 }
 
@@ -39,17 +83,62 @@ class Receiver {
       Y: 20,
       lineX: ((WIDTH - RECT_WIDTH + SPACE) / 2) + RECT_WIDTH / 2
     }
+
+    this.acknowledges = []; //Acknowledges Sent
   }
 
   setSender = (s) => {
-    this.Sender = s;
+    this.sender = s;
   }
   getPackage = () => {
 
   }
 
-  sendAcknowledge = () => {
+  sendAcknowledge = (id, fromY, toY) => {
+    this.acknowledges.push(
+      {
+        id: id,
+        fromX: this.coords.lineX,
+        fromY: fromY,
+        toX: this.sender.coords.lineX,
+        toY: toY
+      }
+    );
+  }
 
+  drawReceiver = (ctx) => {
+    //Draw Box
+    ctx.rect(this.coords.X, this.coords.Y, RECT_WIDTH, RECT_HEIGHT);
+    //Draw Text
+    ctx.font = "20px Arial";
+    ctx.fillText("Receiver", this.coords.X + 10, this.coords.Y + (RECT_HEIGHT / 2) + 8);
+    //Draw Line
+    ctx.moveTo(this.coords.X + RECT_WIDTH / 2, this.coords.Y + RECT_HEIGHT);
+    ctx.lineTo(this.coords.X + RECT_WIDTH / 2, HEIGHT - this.coords.Y + RECT_HEIGHT);
+  }
+
+  drawAcknowledges = (ctx) => {
+
+    this.acknowledges.forEach((a) => {
+      //Draw Line
+      ctx.moveTo(a.fromX, a.fromY);
+      ctx.lineTo(a.toX, a.toY);
+
+      //Draw Package
+      let box = {
+        X: (this.sender.coords.X + this.coords.X) / 1.7,
+        Y: (a.fromY + a.toY) / 2 - 14
+      };
+      ctx.rect(box.X - 3, box.Y - 15, 60, 20);
+      ctx.font = "15px Arial";
+      ctx.fillText("ACK" + a.id, box.X, box.Y);
+
+    });
+  }
+
+  draw = (ctx) => {
+    this.drawReceiver(ctx);
+    this.drawAcknowledges(ctx);
   }
 }
 
@@ -87,38 +176,8 @@ export default class App extends Component {
         toY
       }
     */
-
-    this.packages = []; //Packages Sent
-    this.acknowledges = []; //Acknowledges Sent
-
     this.id = 0;
     this.flag = true;
-
-
-  }
-
-  sendPackage = (id) => {
-    this.packages.push(
-      {
-        id: id,
-        fromX: this.sender.coords.lineX,
-        fromY: this.getY(),
-        toX: this.receiver.coords.lineX,
-        toY: this.getY()
-      }
-    );
-  }
-
-  sendAcknowledge = (id) => {
-    this.acknowledges.push(
-      {
-        id: id,
-        fromX: this.receiver.coords.lineX,
-        fromY: this.getY(),
-        toX: this.sender.coords.lineX,
-        toY: this.getY()
-      }
-    );
   }
 
   startLoop = () => {
@@ -131,18 +190,16 @@ export default class App extends Component {
 
     if (this.flag) {
       this.id++;
-      this.sendPackage(this.id);
+      this.sender.sendPackage(this.id, this.getY(), this.getY());
       this.flag = !this.flag;
     }
     else {
-      this.sendAcknowledge(this.id);
+      this.receiver.sendAcknowledge(this.id, this.getY(), this.getY());
       this.flag = !this.flag;
     }
 
-    this.drawSender();
-    this.drawReceiver();
-    this.drawSentPackages();
-    this.drawAcknowledge();
+    this.sender.draw(this.ctx);
+    this.receiver.draw(this.ctx);
     this.ctx.stroke();
 
   }
@@ -157,68 +214,6 @@ export default class App extends Component {
   getY = () => {
     this.lastY += 30;
     return this.lastY;
-  }
-
-  drawSender = () => {
-    //Draw Box
-    this.ctx.rect(this.sender.coords.X, this.sender.coords.Y, RECT_WIDTH, RECT_HEIGHT);
-    //Draw Text
-    this.ctx.font = "20px Arial";
-    this.ctx.fillText("Sender", this.sender.coords.X + 15, this.sender.coords.Y + (RECT_HEIGHT / 2) + 8);
-    //Draw Line
-    this.ctx.moveTo(this.sender.coords.X + RECT_WIDTH / 2, this.sender.coords.Y + RECT_HEIGHT);
-    this.ctx.lineTo(this.sender.coords.X + RECT_WIDTH / 2, HEIGHT - this.sender.coords.Y + RECT_HEIGHT);
-  }
-
-  drawReceiver = () => {
-    //Draw Box
-    this.ctx.rect(this.receiver.coords.X, this.receiver.coords.Y, RECT_WIDTH, RECT_HEIGHT);
-    //Draw Text
-    this.ctx.font = "20px Arial";
-    this.ctx.fillText("Receiver", this.receiver.coords.X + 10, this.receiver.coords.Y + (RECT_HEIGHT / 2) + 8);
-    //Draw Line
-    this.ctx.moveTo(this.receiver.coords.X + RECT_WIDTH / 2, this.receiver.coords.Y + RECT_HEIGHT);
-    this.ctx.lineTo(this.receiver.coords.X + RECT_WIDTH / 2, HEIGHT - this.receiver.coords.Y + RECT_HEIGHT);
-  }
-
-  drawSentPackages = () => {
-
-    this.packages.forEach((p) => {
-      //Draw Line
-      this.ctx.moveTo(p.fromX, p.fromY);
-      this.ctx.lineTo(p.toX, p.toY);
-      //Draw Package
-      let box = {
-        X: (this.sender.coords.X + this.receiver.coords.X) / 2,
-        Y: (p.fromY + p.toY) / 2 - 14
-      };
-      this.ctx.rect(box.X - 5, box.Y - 15, 40, 20);
-      this.ctx.font = "15px Arial";
-      this.ctx.fillText("P" + p.id, box.X, box.Y);
-
-    });
-
-
-  }
-
-  drawAcknowledge = () => {
-
-    this.acknowledges.forEach((a) => {
-      //Draw Line
-      this.ctx.moveTo(a.fromX, a.fromY);
-      this.ctx.lineTo(a.toX, a.toY);
-
-      //Draw Package
-      let box = {
-        X: (this.sender.coords.X + this.receiver.coords.X) / 1.7,
-        Y: (a.fromY + a.toY) / 2 - 14
-      };
-      this.ctx.rect(box.X - 3, box.Y - 15, 60, 20);
-      this.ctx.font = "15px Arial";
-      this.ctx.fillText("ACK" + a.id, box.X, box.Y);
-
-    });
-
   }
 
   render = () => {
