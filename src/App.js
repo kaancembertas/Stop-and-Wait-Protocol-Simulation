@@ -10,7 +10,14 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = React.createRef();
+  }
 
+  componentDidMount = () => {
+    this.ctx = this.canvasRef.current.getContext("2d");
+    this.ctx.strokeStyle = 'black';
+    this.initialize();
+    this.startSimulatorLoop();
+    this.startSendingPackages();
   }
 
   initialize = () => {
@@ -22,35 +29,66 @@ export default class App extends Component {
     this.timeout = 4 * this.rtt; //Timeout
 
     //Set Devices
-    this.sender = new Sender();
-    this.receiver = new Receiver();
+    this.sender = new Sender(this.rtt);
+    this.receiver = new Receiver(this.rtt);
     this.sender.setReceiver(this.receiver);
     this.receiver.setSender(this.sender);
-    this.lastY = this.sender.coords.Y + consts.RECT_HEIGHT;
+    //this.lastY = this.sender.coords.Y + consts.RECT_HEIGHT; STATIC
+
+    //Set Packages Queue
+    this.packageQueue = [];
+    for (let i = 0; i < this.packageCount; i++) {
+      this.packageQueue.push({
+        id: i + 1
+      });
+    }
   }
 
-  startLoop = () => {
-    setInterval(() => this.simulatorLoop(), 500);
+  drawPackageQueue = () => {
+    const width = 60;
+    const height = 30;
+    const x = 5;
+    let y = 20;
+
+    this.ctx.font = "15px Arial";
+    this.ctx.fillText("Package Queue", x, y);
+    y += 8;
+    this.packageQueue.forEach((p) => {
+      this.ctx.rect(x, y, width, height);
+      this.ctx.fillText("P" + p.id, x + 10, y + height - 8);
+      y += height;
+
+    });
   }
 
-  simulatorLoop = () => {
-    this.ctx.clearRect(0, 0, consts.WIDTH, consts.HEIGHT);
-    this.ctx.beginPath();
+  startSimulatorLoop = () => {
+    this.simulatorLoop = setInterval(() => {
+      this.ctx.clearRect(0, 0, consts.WIDTH, consts.HEIGHT);
+      this.ctx.beginPath();
+      this.drawPackageQueue();
+      this.sender.draw(this.ctx);
+      this.receiver.draw(this.ctx);
+      this.ctx.stroke();
 
-    this.sender.draw(this.ctx);
-    this.receiver.draw(this.ctx);
-    this.ctx.stroke();
+      if (this.packageQueue.length === 0) {
+        clearInterval(this.simulatorLoop);
+      }
 
+    }, 1000 / 60);
   }
 
-  componentDidMount = () => {
-    this.ctx = this.canvasRef.current.getContext("2d");
-    this.ctx.strokeStyle = 'black';
-    this.initialize();
-    this.startLoop();
+
+  startSendingPackages = () => {
+    //TODO: Hata var
+    /* while (this.packageQueue.length > 0) {
+       setTimeout(() => {
+         this.sender.sendPackage(this.packageQueue.shift().id, this.getY(), this.getY());
+       }, this.rtt * 100);
+     }
+     */
   }
 
-  getY = () => {
+  static getY = () => {
     this.lastY += 30;
     return this.lastY;
   }
@@ -69,4 +107,6 @@ export default class App extends Component {
     );
   }
 }
+
+App.lastY = 50;
 
