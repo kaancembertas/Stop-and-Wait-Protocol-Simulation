@@ -46,6 +46,11 @@ export default class Receiver {
 
         if (!ack.loss)
             this.sender.getAcknowledge(ack);
+        else {
+            App.getY();
+            App.getY();
+        }
+
     }
 
     drawReceiver = (ctx) => {

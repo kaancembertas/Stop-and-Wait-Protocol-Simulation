@@ -81,14 +81,16 @@ export default class App extends Component {
   }
 
   drawOutput = () => {
-
+    this.ctx.fillText("OUTPUT", 5, 20);
   }
 
   startSimulatorLoop = () => {
     this.simulatorLoop = setInterval(() => {
       this.ctx.clearRect(0, 0, consts.WIDTH, consts.HEIGHT);
       this.ctx.beginPath();
-      this.drawPackageQueue();
+      if (this.packageQueue.length !== 0) this.drawPackageQueue();
+      else this.drawOutput();
+
       this.drawSimulationData();
       this.sender.draw(this.ctx);
       this.receiver.draw(this.ctx);

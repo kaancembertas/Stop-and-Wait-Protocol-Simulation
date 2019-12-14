@@ -35,7 +35,11 @@ export default class Sender {
 
         if (!this.lastPackageSent.loss)
             this.receiver.getPackage(this.lastPackageSent);
-        else App.getY();
+        else {
+            App.getY();
+            App.getY();
+        }
+
     }
 
     getAcknowledge = (ack) => {
@@ -75,7 +79,7 @@ export default class Sender {
                 ctx.lineTo(box.X - 5, box.Y + 5);
             }
             else if (p.dublicate) {
-                ctx.fillText("Discard dublicate frame", p.toX + 5, p.toY);
+                ctx.fillText("Discard dublicate frame", p.toX + 5, p.toY + 5);
             }
 
         });
