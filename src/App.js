@@ -10,11 +10,18 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = React.createRef();
+    this.state = {
+      isStartedSimulation: false
+    }
   }
 
   componentDidMount = () => {
     this.ctx = this.canvasRef.current.getContext("2d");
     this.ctx.strokeStyle = 'black';
+  }
+
+  startSimulation = () => {
+    this.setState({ isStartedSimulation: true });
     this.initialize();
     this.startSimulatorLoop();
     this.startSendingPackages();
@@ -22,12 +29,13 @@ export default class App extends Component {
 
   initialize = () => {
     //INPUTS
-    this.ber = 2250; //Bit Error Rate 10^-ber
+    App.lastY = 60;
+    this.ber = parseInt(this.state.ber); //Bit Error Rate 10^-ber
 
-    this.length = 450; //Package Length
-    this.packageCount = 5; //Number of Packages
-    this.propagationDelay = 15; //Run Trip Time (ms)
-    this.rtt = 2 * this.propagationDelay;
+    this.length = parseInt(this.state.length); //Package Length
+    this.packageCount = parseInt(this.state.pcount); //Number of Packages
+    this.propagationDelay = parseInt(this.state.pdelay);
+    this.rtt = 2 * this.propagationDelay; //Run Trip Time (ms)
     this.timeout = 2 * this.rtt; //Timeout
     this.bandwith = 8000; //bits per sec
 
@@ -111,6 +119,7 @@ export default class App extends Component {
 
       if (this.receiver.acknowledges.filter(ack => !ack.loss).length === this.packageCount) {
         clearInterval(this.sendPackageLoop);
+        this.setState({ isStartedSimulation: false });
         return;
       }
 
@@ -145,6 +154,29 @@ export default class App extends Component {
   render = () => {
     return (
       <div className="App">
+        <div style={{ marginTop: 5 }}>
+          <label>Bit Error Rate: </label>
+          <input disabled={this.state.isStartedSimulation} type="text"
+            onChange={(e) => this.setState({ ber: e.target.value })} />
+
+          <label>  Package Length: </label>
+          <input disabled={this.state.isStartedSimulation} type="text"
+            onChange={(e) => this.setState({ length: e.target.value })} />
+          <br />
+          <br />
+          <label>Package Count: </label>
+          <input disabled={this.state.isStartedSimulation} type="text"
+            onChange={(e) => this.setState({ pcount: e.target.value })} />
+
+          <label>  Propagation Delay: </label>
+          <input disabled={this.state.isStartedSimulation} type="text"
+            onChange={(e) => this.setState({ pdelay: e.target.value })} />
+          <br />
+          <br />
+          <input disabled={this.state.isStartedSimulation} type="button" value="Start Simulation" onClick={() => this.startSimulation()} />
+
+
+        </div>
         <canvas
           ref={this.canvasRef}
           id="canvas"
