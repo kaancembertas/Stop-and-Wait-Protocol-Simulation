@@ -3,15 +3,16 @@ import App from './App';
 
 export default class Sender {
 
-    constructor(rtt) {
+    constructor(propagationDelay) {
         this.coords = {
             X: (consts.WIDTH - consts.RECT_WIDTH - consts.SPACE) / 2,
             Y: 20,
             lineX: ((consts.WIDTH - consts.RECT_WIDTH - consts.SPACE) / 2) + consts.RECT_WIDTH / 2
         }
         this.packages = []; //Packages Sent
-        this.lastPackageSent = null;
-        this.rtt = rtt;
+        this.lastPackageSent = { id: -1 }; //Initially not exist
+        this.lastAcknowledge = { id: -1 }; //Initially not exist
+        this.propagationDelay = propagationDelay;
 
 
     }
@@ -20,17 +21,23 @@ export default class Sender {
         this.receiver = r;
     }
 
-    sendPackage = (id) => {
+    sendPackage = (id, loss) => {
         this.lastPackageSent = {
             id: id,
+            loss: loss,
             fromX: this.coords.lineX,
             fromY: App.getY(),
             toX: this.receiver.coords.lineX,
             toY: App.getY()
         };
         this.packages.push(this.lastPackageSent);
-        this.receiver.getPackage(this.lastPackageSent);
 
+        if (!this.lastPackageSent.loss)
+            this.receiver.getPackage(this.lastPackageSent);
+    }
+
+    getAcknowledge = (ack) => {
+        this.lastAcknowledge = ack;
     }
 
     drawSender = (ctx) => {

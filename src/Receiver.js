@@ -2,7 +2,7 @@ import consts from './Constants.js';
 import App from './App';
 
 export default class Receiver {
-    constructor(rtt) {
+    constructor(propagationDelay) {
         this.coords = {
             X: (consts.WIDTH - consts.RECT_WIDTH + consts.SPACE) / 2,
             Y: 20,
@@ -10,7 +10,7 @@ export default class Receiver {
         }
 
         this.acknowledges = []; //Acknowledges Sent
-        this.rtt = rtt;
+        this.propagationDelay = propagationDelay;
 
     }
 
@@ -19,20 +19,21 @@ export default class Receiver {
     }
     getPackage = (p) => {
         setTimeout(() => {
-            this.sendAcknowledge(p.id)
-        }, this.rtt * 100);
+            this.sendAcknowledge(p.id);
+        }, this.propagationDelay * consts.SPEED);
     }
 
     sendAcknowledge = (id) => {
-        this.acknowledges.push(
-            {
-                id: id,
-                fromX: this.coords.lineX,
-                fromY: App.getY(),
-                toX: this.sender.coords.lineX,
-                toY: App.getY()
-            }
-        );
+        const ack = {
+            id: id,
+            fromX: this.coords.lineX,
+            fromY: App.getY(),
+            toX: this.sender.coords.lineX,
+            toY: App.getY()
+        };
+
+        this.acknowledges.push(ack);
+        this.sender.getAcknowledge(ack);
     }
 
     drawReceiver = (ctx) => {
