@@ -4,5 +4,5 @@ export default {
     SPACE: 300,
     RECT_WIDTH: 100,
     RECT_HEIGHT: 40,
-    SPEED: 50
+    SPEED: 100
 }

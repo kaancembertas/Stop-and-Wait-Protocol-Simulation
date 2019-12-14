@@ -66,6 +66,14 @@ export default class Sender {
             ctx.font = "15px Arial";
             ctx.fillText("P" + p.id, box.X, box.Y);
 
+            if (p.loss) {
+                ctx.moveTo(box.X - 5, box.Y - 15);
+                ctx.lineTo(box.X + 35, box.Y + 5);
+
+                ctx.moveTo(box.X + 35, box.Y - 15);
+                ctx.lineTo(box.X - 5, box.Y + 5);
+            }
+
         });
     }
 

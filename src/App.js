@@ -22,7 +22,10 @@ export default class App extends Component {
 
   initialize = () => {
     //INPUTS
-    this.ber = 1000; //Bit Error Rate
+    this.ber = 1000; //Bit Error Rate 10^-ber
+    this.errorCounter = 1;
+    this.bitCounter = 0;
+
     this.length = 450; //Package Length
     this.packageCount = 5; //Number of Packages
     this.propagationDelay = 15; //Run Trip Time (ms)
@@ -70,7 +73,8 @@ export default class App extends Component {
     this.ctx.font = "15px Arial";
     this.ctx.fillText("Master Clock: " + this.masterClock, 625, 20);
     this.ctx.fillText("Simulation Time: " + this.simulationTime, 625, 40);
-    this.ctx.fillText("Timeout Counter: " + this.timeoutCounter, 625, 60);
+    this.ctx.fillText("Total Bits: " + this.bitCounter, 625, 60);
+    this.ctx.fillText("Timeout Counter: " + this.timeoutCounter, 625, 80);
   }
 
   startSimulatorLoop = () => {
@@ -85,6 +89,18 @@ export default class App extends Component {
     }, 1000 / 10);
   }
 
+  isPacketLoss = () => {
+    if (this.bitCounter >= this.errorCounter * this.ber) {
+      this.errorCounter++;
+
+      console.log(this.bitCounter, this.errorCounter - 1, this.ber);
+      return true;
+    }
+
+
+    return false;
+
+  }
 
   startSendingPackages = () => {
     this.sendPackageLoop = setInterval(() => {
@@ -95,11 +111,14 @@ export default class App extends Component {
 
       if (this.sender.lastPackageSent.id === this.sender.lastAcknowledge.id) {
         this.timeoutCounter = 0;
-        this.sender.sendPackage(this.packageQueue.shift().id);
+        this.bitCounter += this.length;
+        this.sender.sendPackage(this.packageQueue.shift().id, this.isPacketLoss());
       }
+      else App.getY();
 
       if (this.timeoutCounter === this.timeout) {
-        this.sender.sendPackage(this.sender.lastPackageSent.id);
+        this.bitCounter += this.length;
+        this.sender.sendPackage(this.sender.lastPackageSent.id, this.isPacketLoss());
         this.timeoutCounter = 0;
       }
 
