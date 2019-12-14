@@ -4,5 +4,6 @@ export default {
     SPACE: 300,
     RECT_WIDTH: 100,
     RECT_HEIGHT: 40,
-    SPEED: 100
+    SPEED: 50,//
+    LOSS_ACK_PROB: 0.2
 }

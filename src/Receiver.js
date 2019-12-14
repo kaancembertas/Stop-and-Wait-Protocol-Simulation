@@ -11,6 +11,7 @@ export default class Receiver {
 
         this.acknowledges = []; //Acknowledges Sent
         this.propagationDelay = propagationDelay;
+        this.packagesGot = [];
 
     }
 
@@ -20,12 +21,21 @@ export default class Receiver {
     getPackage = (p) => {
         setTimeout(() => {
             this.sendAcknowledge(p.id);
+            this.packagesGot.push(p.id);
         }, this.propagationDelay * consts.SPEED);
     }
 
+    isLossAck = () => {
+        if (Math.random() <= consts.LOSS_ACK_PROB)
+            return true;
+        return false;
+    }
+
     sendAcknowledge = (id) => {
+        const loss = this.isLossAck();
         const ack = {
             id: id,
+            loss: loss,
             fromX: this.coords.lineX,
             fromY: App.getY(),
             toX: this.sender.coords.lineX,
@@ -33,7 +43,9 @@ export default class Receiver {
         };
 
         this.acknowledges.push(ack);
-        this.sender.getAcknowledge(ack);
+
+        if (!ack.loss)
+            this.sender.getAcknowledge(ack);
     }
 
     drawReceiver = (ctx) => {
@@ -48,11 +60,17 @@ export default class Receiver {
     }
 
     drawAcknowledges = (ctx) => {
-
         this.acknowledges.forEach((a) => {
             //Draw Line
-            ctx.moveTo(a.fromX, a.fromY);
-            ctx.lineTo(a.toX, a.toY);
+            if (a.loss) {
+                ctx.moveTo(a.fromX, a.fromY);
+                ctx.lineTo(a.toX + consts.SPACE / 2, a.toY - 15);
+            }
+            else {
+                ctx.moveTo(a.fromX, a.fromY);
+                ctx.lineTo(a.toX, a.toY);
+            }
+
 
             //Draw Package
             let box = {
@@ -62,6 +80,8 @@ export default class Receiver {
             ctx.rect(box.X - 3, box.Y - 15, 60, 20);
             ctx.font = "15px Arial";
             ctx.fillText("ACK" + a.id, box.X, box.Y);
+
+
 
         });
     }

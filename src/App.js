@@ -22,15 +22,14 @@ export default class App extends Component {
 
   initialize = () => {
     //INPUTS
-    this.ber = 1000; //Bit Error Rate 10^-ber
-    this.errorCounter = 1;
-    this.bitCounter = 0;
+    this.ber = 2250; //Bit Error Rate 10^-ber
 
     this.length = 450; //Package Length
     this.packageCount = 5; //Number of Packages
     this.propagationDelay = 15; //Run Trip Time (ms)
     this.rtt = 2 * this.propagationDelay;
     this.timeout = 2 * this.rtt; //Timeout
+    this.bandwith = 8000; //bits per sec
 
     //Set Devices
     this.sender = new Sender(this.propagationDelay);
@@ -46,10 +45,13 @@ export default class App extends Component {
         id: i + 1
       });
     }
-    //Time variables
+    //Time variables and Counters
     this.timeoutCounter = 0; //(ms)
     this.simulationTime = 0; //(ms)
     this.masterClock = 0;
+
+    this.errorCounter = 1;
+    this.bitCounter = 0;
   }
 
   drawPackageQueue = () => {
@@ -72,9 +74,14 @@ export default class App extends Component {
   drawSimulationData = () => {
     this.ctx.font = "15px Arial";
     this.ctx.fillText("Master Clock: " + this.masterClock, 625, 20);
-    this.ctx.fillText("Simulation Time: " + this.simulationTime, 625, 40);
+    this.ctx.fillText("Simulation Time: " + this.simulationTime + "ms", 625, 40);
     this.ctx.fillText("Total Bits: " + this.bitCounter, 625, 60);
-    this.ctx.fillText("Timeout Counter: " + this.timeoutCounter, 625, 80);
+    this.ctx.fillText("Sucessfull Bits: " + (this.bitCounter - (this.errorCounter - 1) * this.length), 625, 80);
+    this.ctx.fillText("Timeout Counter: " + this.timeoutCounter + "ms", 625, 100);
+  }
+
+  drawOutput = () => {
+
   }
 
   startSimulatorLoop = () => {
@@ -92,19 +99,15 @@ export default class App extends Component {
   isPacketLoss = () => {
     if (this.bitCounter >= this.errorCounter * this.ber) {
       this.errorCounter++;
-
-      console.log(this.bitCounter, this.errorCounter - 1, this.ber);
       return true;
     }
-
-
     return false;
-
   }
 
   startSendingPackages = () => {
     this.sendPackageLoop = setInterval(() => {
-      if (this.receiver.acknowledges.length === this.packageCount) {
+
+      if (this.receiver.acknowledges.filter(ack => !ack.loss).length === this.packageCount) {
         clearInterval(this.sendPackageLoop);
         return;
       }
@@ -112,22 +115,23 @@ export default class App extends Component {
       if (this.sender.lastPackageSent.id === this.sender.lastAcknowledge.id) {
         this.timeoutCounter = 0;
         this.bitCounter += this.length;
-        this.sender.sendPackage(this.packageQueue.shift().id, this.isPacketLoss());
+        this.sender.sendPackage(this.packageQueue.shift().id, this.isPacketLoss(), false);
       }
-      else App.getY();
+
 
       if (this.timeoutCounter === this.timeout) {
         this.bitCounter += this.length;
-        this.sender.sendPackage(this.sender.lastPackageSent.id, this.isPacketLoss());
+        this.sender.sendPackage(
+          this.sender.lastPackageSent.id,
+          this.isPacketLoss(),
+          this.receiver.packagesGot.includes(this.sender.lastPackageSent.id) ? true : false);
+
         this.timeoutCounter = 0;
       }
 
       this.timeoutCounter += this.propagationDelay;
       this.simulationTime += this.propagationDelay;
       this.masterClock++;
-
-
-
     }, this.propagationDelay * consts.SPEED); //consts.SPEED times slower
   }
 

@@ -21,19 +21,21 @@ export default class Sender {
         this.receiver = r;
     }
 
-    sendPackage = (id, loss) => {
+    sendPackage = (id, loss, dublicate) => {
         this.lastPackageSent = {
             id: id,
             loss: loss,
             fromX: this.coords.lineX,
             fromY: App.getY(),
             toX: this.receiver.coords.lineX,
-            toY: App.getY()
+            toY: App.getY(),
+            dublicate: dublicate
         };
         this.packages.push(this.lastPackageSent);
 
         if (!this.lastPackageSent.loss)
             this.receiver.getPackage(this.lastPackageSent);
+        else App.getY();
     }
 
     getAcknowledge = (ack) => {
@@ -69,9 +71,11 @@ export default class Sender {
             if (p.loss) {
                 ctx.moveTo(box.X - 5, box.Y - 15);
                 ctx.lineTo(box.X + 35, box.Y + 5);
-
                 ctx.moveTo(box.X + 35, box.Y - 15);
                 ctx.lineTo(box.X - 5, box.Y + 5);
+            }
+            else if (p.dublicate) {
+                ctx.fillText("Discard dublicate frame", p.toX + 5, p.toY);
             }
 
         });
