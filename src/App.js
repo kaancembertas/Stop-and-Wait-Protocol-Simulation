@@ -16,7 +16,8 @@ export default class App extends Component {
       ber: '',
       length: '',
       pcount: '',
-      pdelay: ''
+      pdelay: '',
+      bandwidth: ''
     }
   }
 
@@ -44,7 +45,7 @@ export default class App extends Component {
     this.propagationDelay = parseInt(this.state.pdelay);
     this.rtt = 2 * this.propagationDelay; //Run Trip Time (ms)
     this.timeout = 2 * this.rtt; //Timeout
-    this.bandwith = 8000; //bits per sec
+    this.bandwidth = this.state.bandwidth; //bits per sec
 
     //Set Devices
     this.sender = new Sender(this.propagationDelay);
@@ -97,6 +98,9 @@ export default class App extends Component {
 
   drawOutput = () => {
     this.ctx.fillText("OUTPUT", 5, 20);
+    this.ctx.fillText("Utilization: " + ((this.length / this.bandwidth) / (this.rtt + (this.length / this.bandwidth))).toFixed(3), 5, 40);
+    this.ctx.fillText("Throughput: " + (this.bitCounter / this.simulationTime).toFixed(3), 5, 60);
+    this.ctx.fillText("Goodput: " + ((this.bitCounter - (this.errorCounter - 1) * this.length) / this.simulationTime).toFixed(3), 5, 80);
   }
 
   startSimulatorLoop = () => {
@@ -162,7 +166,7 @@ export default class App extends Component {
     return (
       <div className="App">
         <div style={{ marginTop: 5 }}>
-          <label>Bit Error Rate: </label>
+          <label>Bit Error Rate (error/bits): </label>
           <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ ber: e.target.value })} />
 
@@ -175,9 +179,14 @@ export default class App extends Component {
           <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ pcount: e.target.value })} />
 
-          <label>  Propagation Delay: </label>
+          <label>  Propagation Delay(ms): </label>
           <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ pdelay: e.target.value })} />
+          <br />
+          <br />
+          <label>  Bandwidth(bits/sec): </label>
+          <input disabled={this.state.isStartedSimulation} type="number"
+            onChange={(e) => this.setState({ bandwidth: e.target.value })} />
           <br />
           <br />
           <input disabled={this.state.isStartedSimulation} type="button" value="Start Simulation" onClick={() => this.startSimulation()} />
