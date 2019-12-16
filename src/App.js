@@ -11,7 +11,12 @@ export default class App extends Component {
     super(props);
     this.canvasRef = React.createRef();
     this.state = {
-      isStartedSimulation: false
+      isStartedSimulation: false,
+      //Inputs
+      ber: '',
+      length: '',
+      pcount: '',
+      pdelay: ''
     }
   }
 
@@ -21,6 +26,8 @@ export default class App extends Component {
   }
 
   startSimulation = () => {
+    if (this.state.ber === '' || this.state.length === '' || this.state.pcount === '' || this.state.pdelay === '') return;
+
     this.setState({ isStartedSimulation: true });
     this.initialize();
     this.startSimulatorLoop();
@@ -156,20 +163,20 @@ export default class App extends Component {
       <div className="App">
         <div style={{ marginTop: 5 }}>
           <label>Bit Error Rate: </label>
-          <input disabled={this.state.isStartedSimulation} type="text"
+          <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ ber: e.target.value })} />
 
           <label>  Package Length: </label>
-          <input disabled={this.state.isStartedSimulation} type="text"
+          <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ length: e.target.value })} />
           <br />
           <br />
           <label>Package Count: </label>
-          <input disabled={this.state.isStartedSimulation} type="text"
+          <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ pcount: e.target.value })} />
 
           <label>  Propagation Delay: </label>
-          <input disabled={this.state.isStartedSimulation} type="text"
+          <input disabled={this.state.isStartedSimulation} type="number"
             onChange={(e) => this.setState({ pdelay: e.target.value })} />
           <br />
           <br />
