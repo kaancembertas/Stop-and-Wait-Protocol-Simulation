@@ -107,7 +107,7 @@ export default class App extends Component {
     this.simulatorLoop = setInterval(() => {
       this.ctx.clearRect(0, 0, consts.WIDTH, consts.HEIGHT);
       this.ctx.beginPath();
-      if (this.packageQueue.length !== 0) this.drawPackageQueue();
+      if (this.state.isStartedSimulation) this.drawPackageQueue();
       else this.drawOutput();
 
       this.drawSimulationData();
