@@ -1,3 +1,7 @@
+# Stop and Wait Protocol Simulation
+![Stop And Wait](Simulation.png)
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
