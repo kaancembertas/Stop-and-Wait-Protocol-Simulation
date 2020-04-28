@@ -1,4 +1,6 @@
 # Stop and Wait Protocol Simulation
+The aim of this project to simulate flow control protocols in data communication such as Stop and Wait Protocol and Sliding Window (Pipelining).
+
 ![Stop And Wait](Simulation.png)
 
 
